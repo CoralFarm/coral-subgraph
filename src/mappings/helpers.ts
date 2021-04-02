@@ -28,7 +28,7 @@ export function bigDecimalExp18(): BigDecimal {
     return BigDecimal.fromString('1000000000000000000')
 }
 
-export function convertEthToDecimal(eth: BigInt): BigDecimal {
+export function convertBNBToDecimal(eth: BigInt): BigDecimal {
     return eth.toBigDecimal().div(exponentToBigDecimal(18))
 }
 

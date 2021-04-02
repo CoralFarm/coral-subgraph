@@ -11,28 +11,28 @@ const USDT_WBNB_PAIR = '0x18423af15ee68da3d57d07a7cc8529bd16cd29a2' // created b
 export function getBNBPriceInUSD(): BigDecimal {
     // fetch eth prices for each stablecoin
     let usdtPair = CRLPair.load(USDT_WBNB_PAIR) // usdt is token0 / bnb is token1
-    let busdPair = CRLPair.load(BUSD_WBNB_PAIR) // busd is token0 / bnb is token1
+    let busdPair = CRLPair.load(BUSD_WBNB_PAIR) // busd is token1 / bnb is token0
     let daiPair = CRLPair.load(DAI_WBNB_PAIR)   // dai is token0 / bnb is token1
 
     // all 3 have been created
     if (daiPair !== null && busdPair !== null && usdtPair !== null) {
-        let totalLiquidityBNB = daiPair.reserve1.plus(busdPair.reserve1).plus(usdtPair.reserve1)
+        let totalLiquidityBNB = daiPair.reserve1.plus(busdPair.reserve0).plus(usdtPair.reserve1)
         let daiWeight = daiPair.reserve1.div(totalLiquidityBNB)
-        let busdWeight = busdPair.reserve1.div(totalLiquidityBNB)
+        let busdWeight = busdPair.reserve0.div(totalLiquidityBNB)
         let usdtWeight = usdtPair.reserve1.div(totalLiquidityBNB)
         return daiPair.token0Price
             .times(daiWeight)
-            .plus(busdPair.token0Price.times(busdWeight))
+            .plus(busdPair.token1Price.times(busdWeight))
             .plus(usdtPair.token0Price.times(usdtWeight))
         // busd and usdt have been created
     } else if (busdPair !== null && usdtPair !== null) {
-        let totalLiquidityBNB = busdPair.reserve1.plus(usdtPair.reserve1)
-        let busdWeight = busdPair.reserve1.div(totalLiquidityBNB)
+        let totalLiquidityBNB = busdPair.reserve0.plus(usdtPair.reserve1)
+        let busdWeight = busdPair.reserve0.div(totalLiquidityBNB)
         let usdtWeight = usdtPair.reserve1.div(totalLiquidityBNB)
-        return busdPair.token1Price.times(busdWeight).plus(usdtPair.token1Price.times(usdtWeight))
+        return busdPair.token1Price.times(busdWeight).plus(usdtPair.token0Price.times(usdtWeight))
         // usdt is the only pair so far
     } else if (busdPair !== null) {
-        return busdPair.token0Price
+        return busdPair.token1Price
     } else if (usdtPair !== null) {
         return usdtPair.token0Price
     } else {
@@ -55,7 +55,7 @@ let WHITELIST: string[] = [
 ]
 
 // minimum liquidity for price to get tracked
-let MINIMUM_LIQUIDITY_THRESHOLD_ETH = BigDecimal.fromString('2')
+let MINIMUM_LIQUIDITY_THRESHOLD_BNB = BigDecimal.fromString('2')
 
 /**
  * Search through graph to find derived Eth per token.
@@ -70,11 +70,11 @@ export function findBNBPerToken(token: Token): BigDecimal {
         let pairAddress = factoryContract.getPair(Address.fromString(token.id), Address.fromString(WHITELIST[i]))
         if (pairAddress.toHexString() != ADDRESS_ZERO) {
             let pair = CRLPair.load(pairAddress.toHexString())
-            if (pair.token0 == token.id && pair.reserveBNB.gt(MINIMUM_LIQUIDITY_THRESHOLD_ETH)) {
+            if (pair.token0 == token.id && pair.reserveBNB.gt(MINIMUM_LIQUIDITY_THRESHOLD_BNB)) {
                 let token1 = Token.load(pair.token1)
                 return pair.token1Price.times(token1.derivedBNB as BigDecimal) // return token1 per our token * Eth per token 1
             }
-            if (pair.token1 == token.id && pair.reserveBNB.gt(MINIMUM_LIQUIDITY_THRESHOLD_ETH)) {
+            if (pair.token1 == token.id && pair.reserveBNB.gt(MINIMUM_LIQUIDITY_THRESHOLD_BNB)) {
                 let token0 = Token.load(pair.token0)
                 return pair.token0Price.times(token0.derivedBNB as BigDecimal) // return token0 per our token * ETH per token 0
             }
