@@ -1,4 +1,4 @@
-specVersion: 0.0.2
+specVersion: 0.0.3
 description: Coral DEX is a decentralized protocol for automated token exchange on Binance Smart Chain.
 repository: https://github.com/CoralFarm/coral-subgraph
 schema:
@@ -34,7 +34,7 @@ dataSources:
 templates:
   - kind: ethereum/contract
     name: CRLPair
-    network: mainnet
+    network: bsc
     source:
       abi: CRLPair
     mapping:
