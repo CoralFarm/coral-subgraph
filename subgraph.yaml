@@ -1,0 +1,63 @@
+specVersion: 0.0.2
+description: Coral DEX is a decentralized protocol for automated token exchange on Binance Smart Chain.
+repository: https://github.com/CoralFarm/coral-subgraph
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: CRLFactory
+    network: mainnet
+    source:
+      address: '0x8033ae5E0bfCE8C30461dc0a13b65C07c7667F66'
+      abi: CRLFactory
+      startBlock: 6090924
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/factory.ts
+      entities:
+        - Pair
+        - Token
+      abis:
+        - name: CRLFactory
+          file: ./abis/CRLFactory.json
+        - name: BEP20
+          file: ./abis/BEP20.json
+        - name: BEP20SymbolBytes
+          file: ./abis/BEP20SymbolBytes.json
+        - name: BEP20NameBytes
+          file: ./abis/BEP20NameBytes.json
+      eventHandlers:
+        - event: PairCreated(indexed address,indexed address,address,uint256)
+          handler: handleNewPair
+templates:
+  - kind: ethereum/contract
+    name: CRLPair
+    network: mainnet
+    source:
+      abi: CRLPair
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.4
+      language: wasm/assemblyscript
+      file: ./src/mappings/core.ts
+      entities:
+        - CRLPair
+        - Token
+      abis:
+        - name: CRLPair
+          file: ./abis/CRLPair.json
+        - name: CRLFactory
+          file: ./abis/CRLFactory.json
+      eventHandlers:
+        - event: Mint(indexed address,uint256,uint256)
+          handler: handleMint
+        - event: Burn(indexed address,uint256,uint256,indexed address)
+          handler: handleBurn
+        - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
+          handler: handleSwap
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+        - event: Sync(uint112,uint112)
+          handler: handleSync

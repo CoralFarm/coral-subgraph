@@ -1,1 +1,1 @@
-# coral-subgraph
+# Coral DEX Subgraph
