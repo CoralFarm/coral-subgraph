@@ -4,35 +4,35 @@ import { BigDecimal, Address } from '@graphprotocol/graph-ts/index'
 import { ZERO_BD, factoryContract, ADDRESS_ZERO, ONE_BD } from './helpers'
 
 const WBNB_ADDRESS = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c'
-const BUSD_WBNB_PAIR = '0x1b96b92314c44b159149f7e0303511fb2fc4774f' // created block 589414
-const DAI_WBNB_PAIR = '0xf3010261b58b2874639ca2e860e9005e3be5de0b'  // created block 481116
-const USDT_WBNB_PAIR = '0x20bcc3b8a0091ddac2d0bc30f68e6cbb97de59cd' // created block 648115
+const BUSD_WBNB_PAIR = '0xe14fd45fcefb20180a2720615caa8d9f306e9e20' // created block 6108298
+const DAI_WBNB_PAIR = '0x8aafe6402bba0af9f8ce2e7eb00aeb4e8021e88e'  // created block 6205919
+const USDT_WBNB_PAIR = '0x18423af15ee68da3d57d07a7cc8529bd16cd29a2' // created block 6205871
 
 export function getBNBPriceInUSD(): BigDecimal {
     // fetch eth prices for each stablecoin
-    let usdtPair = CRLPair.load(USDT_WBNB_PAIR) // usdt is token0
-    let busdPair = CRLPair.load(BUSD_WBNB_PAIR) // busd is token1
-    let daiPair = CRLPair.load(DAI_WBNB_PAIR)   // dai is token0
+    let usdtPair = CRLPair.load(USDT_WBNB_PAIR) // usdt is token0 / bnb is token1
+    let busdPair = CRLPair.load(BUSD_WBNB_PAIR) // busd is token0 / bnb is token1
+    let daiPair = CRLPair.load(DAI_WBNB_PAIR)   // dai is token0 / bnb is token1
 
     // all 3 have been created
     if (daiPair !== null && busdPair !== null && usdtPair !== null) {
-        let totalLiquidityBNB = daiPair.reserve1.plus(busdPair.reserve0).plus(usdtPair.reserve1)
+        let totalLiquidityBNB = daiPair.reserve1.plus(busdPair.reserve1).plus(usdtPair.reserve1)
         let daiWeight = daiPair.reserve1.div(totalLiquidityBNB)
-        let busdWeight = busdPair.reserve0.div(totalLiquidityBNB)
+        let busdWeight = busdPair.reserve1.div(totalLiquidityBNB)
         let usdtWeight = usdtPair.reserve1.div(totalLiquidityBNB)
         return daiPair.token0Price
             .times(daiWeight)
-            .plus(busdPair.token1Price.times(busdWeight))
+            .plus(busdPair.token0Price.times(busdWeight))
             .plus(usdtPair.token0Price.times(usdtWeight))
         // busd and usdt have been created
     } else if (busdPair !== null && usdtPair !== null) {
-        let totalLiquidityBNB = busdPair.reserve0.plus(usdtPair.reserve1)
-        let busdWeight = busdPair.reserve0.div(totalLiquidityBNB)
+        let totalLiquidityBNB = busdPair.reserve1.plus(usdtPair.reserve1)
+        let busdWeight = busdPair.reserve1.div(totalLiquidityBNB)
         let usdtWeight = usdtPair.reserve1.div(totalLiquidityBNB)
-        return busdPair.token1Price.times(busdWeight).plus(usdtPair.token0Price.times(usdtWeight))
+        return busdPair.token1Price.times(busdWeight).plus(usdtPair.token1Price.times(usdtWeight))
         // usdt is the only pair so far
     } else if (busdPair !== null) {
-        return busdPair.token1Price
+        return busdPair.token0Price
     } else if (usdtPair !== null) {
         return usdtPair.token0Price
     } else {
