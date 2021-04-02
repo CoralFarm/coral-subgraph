@@ -6,7 +6,7 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: CRLFactory
-    network: mainnet
+    network: bsc
     source:
       address: '0x8033ae5E0bfCE8C30461dc0a13b65C07c7667F66'
       abi: CRLFactory
