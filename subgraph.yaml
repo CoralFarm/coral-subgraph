@@ -15,13 +15,14 @@ dataSources:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-      file: ./src/mappings/factory.ts
+      file: ./src/mappings/crlFactory.ts
       entities:
-        - Pair
-        - Token
+        - CRLFactory
       abis:
         - name: CRLFactory
           file: ./abis/CRLFactory.json
+        - name: CRLPair
+          file: ./abis/CRLPair.json
         - name: BEP20
           file: ./abis/BEP20.json
         - name: BEP20SymbolBytes
@@ -30,7 +31,7 @@ dataSources:
           file: ./abis/BEP20NameBytes.json
       eventHandlers:
         - event: PairCreated(indexed address,indexed address,address,uint256)
-          handler: handleNewPair
+          handler: onPairCreated
 templates:
   - kind: ethereum/contract
     name: CRLPair
@@ -41,10 +42,19 @@ templates:
       kind: ethereum/events
       apiVersion: 0.0.4
       language: wasm/assemblyscript
-      file: ./src/mappings/core.ts
+      file: ./src/mappings/crlPair.ts
       entities:
+        - Bundle
+        - Burn
+        - LiquidityPosition
+        - LiquidityPositionSnapshot
+        - Mint
         - CRLPair
+        - Swap
+        - Sync
         - Token
+        - Transaction
+        - User
       abis:
         - name: CRLPair
           file: ./abis/CRLPair.json
@@ -52,12 +62,12 @@ templates:
           file: ./abis/CRLFactory.json
       eventHandlers:
         - event: Mint(indexed address,uint256,uint256)
-          handler: handleMint
+          handler: onMint
         - event: Burn(indexed address,uint256,uint256,indexed address)
-          handler: handleBurn
+          handler: onBurn
         - event: Swap(indexed address,uint256,uint256,uint256,uint256,indexed address)
-          handler: handleSwap
+          handler: onSwap
         - event: Transfer(indexed address,indexed address,uint256)
-          handler: handleTransfer
+          handler: onTransfer
         - event: Sync(uint112,uint112)
-          handler: handleSync
+          handler: onSync
